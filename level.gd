@@ -1,9 +1,14 @@
 extends Node
 
 @export var time_limit: float = 4.0
+@export var last_step = 10
 const OBST_SPEED = 215
 var game_over = false
 var farthest = 0
+var step = 0
+var end = false
+var prev_step = -1
+var last_dir = ""
 
 signal up_pressed
 signal down_pressed
@@ -40,8 +45,6 @@ func _ready():
 	farthest = $CharacterBody2D.velocity.y
 	
 func _process(_delta):
-	print($CharacterBody2D.velocity.y)
-	print(farthest)
 	# update timer text
 	$TimerText.text = get_timer_text($Timer.time_left)
 
@@ -49,10 +52,21 @@ func _input(event):
 	# probably don't need to create a signal here since it's the same file, but maybe move elsewhere later
 	if not game_over:
 		if event.is_action_pressed("up"):
+			last_dir = "up"
+			prev_step = step
+			if step <= last_step:
+				step += 1
+				
 			$Timer.start()
 			emit_signal("up_pressed")
-		elif event.is_action_pressed("down"):
-			emit_signal("down_pressed")
+		elif event.is_action_pressed("down") and step != 0:
+			last_dir = "down"
+			prev_step = step
+			step -= 1
+			update_end()
+			
+			if prev_step != last_step + 1:
+				emit_signal("down_pressed")
 			
 
 # callbacks
@@ -95,12 +109,21 @@ func connect_obstacle_collision():
 #		$Obstacles/Obstacle/Area2D.connect("body_entered", _on_Obstacle_body_entered)
 	
 func update_obstacle_positions(dir):
+	# only move if it's not game over
 	if not game_over:
-		for obstacle in $Obstacles.get_children():
-			obstacle.position.y += OBST_SPEED * dir
+		# only move if we're not on the last step or we're moving down
+		if not end or dir == -1:
+			for obstacle in $Obstacles.get_children():
+				obstacle.position.y += OBST_SPEED * dir
+			
+	update_end()
 
 func move_dog(dir):
 	$Dog/AnimationPlayer.stop()
 	$Dog/AnimationPlayer.play("creep")
 		
 	$Dog/Sprite2D.position.y += dir * OBST_SPEED
+
+func update_end():
+	end = (step == last_step or step == last_step + 1)
+	$CharacterBody2D.end = ((prev_step == last_step) and last_dir == "up") or (prev_step == last_step + 1)

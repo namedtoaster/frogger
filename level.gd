@@ -25,6 +25,8 @@ func _ready():
 	connect_obstacle_collision()
 	# Connect the signal for the timer
 	$Timer.connect("timeout", _on_Timer_timeout)
+	# connet the signal for when the player has reached the end
+	$CharacterBody2D.connect("reached_end", _on_Player_reached_end)
 	# Connect the signal for when the player moves up
 	self.connect("up_pressed", _on_Up_pressed)
 	self.connect("down_pressed", _on_Down_pressed)
@@ -88,6 +90,9 @@ func _on_Timer_timeout():
 	$Timer.stop()
 	set_game_over()
 	
+func _on_Player_reached_end():
+	set_game_over()
+	
 	
 # utility functions
 func set_game_over():
@@ -101,6 +106,10 @@ func set_game_over():
 	
 	# stop timer
 	$Timer.stop()
+	
+	# stop animation if it's playing
+	# this just resets the animation, i would prefer to pause it. but this works for now
+	$Dog/AnimationPlayer.stop()
 	
 func connect_obstacle_collision():
 	for obstacle in $Obstacles.get_children():

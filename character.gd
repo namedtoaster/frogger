@@ -1,5 +1,6 @@
 extends CharacterBody2D
 
+signal reached_end;
 
 const LR_SPEED = 6500.0
 const UD_SPEED = 9500.0
@@ -12,11 +13,11 @@ var end = false
 var step = 0
 var last_step = -1
 var moved_up = false
+var released = true
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 
-var released = true
 
 func _input(event):
 	if event.is_action_released("left") or event.is_action_released("right") or event.is_action_released("up") or event.is_action_released("down"):
@@ -38,7 +39,11 @@ func _physics_process(_delta):
 		if ud_direction and end and (not moved_up or ud_direction == 1):
 			velocity.y = ud_direction * UD_SPEED
 			released = false
+			if ud_direction == -1:
+				emit_signal("reached_end")
 			
+			# i don't think i'll need this since the game should be done by this time
+			# don't need to move down if you've already reached the end
 			moved_up = ud_direction == -1
 	else:
 		# this prevents sliding

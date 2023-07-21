@@ -4,11 +4,11 @@ extends Node
 @export var last_step = 10
 const OBST_SPEED = 215
 var game_over = false
-var farthest = 0
 var step = 0
 var end = false
 var prev_step = -1
 var last_dir = ""
+var prize = false
 
 signal up_pressed
 signal down_pressed
@@ -21,8 +21,13 @@ func get_timer_text(val):
 	
 # builtin functions
 func _ready():
-	# Connect the signal for collision detection
-	connect_obstacle_collision()
+	# Connect the signal for obstacle collision detection
+	$CharacterBody2D.connect("hit_obstacle", _on_Obstacle_hit)
+	# connect the signal for prize detection
+	$CharacterBody2D.connect("prize_collected", _on_Prize_collected)
+	# connect the signal for throwing the treat
+	$CharacterBody2D.connect("throw_treat", _on_Treat_thrown)
+	
 	# Connect the signal for the timer
 	$Timer.connect("timeout", _on_Timer_timeout)
 	# connet the signal for when the player has reached the end
@@ -43,12 +48,18 @@ func _ready():
 	# animate dog
 	$Dog/AnimationPlayer.play("creep")
 	
+	# turn off treat animation until ready
+	$Treat.visible = false
+	
 	# set the farthest point to where the player is right now
-	farthest = $CharacterBody2D.velocity.y
+	#farthest = $CharacterBody2D.velocity.y
 	
 func _process(_delta):
 	# update timer text
 	$TimerText.text = get_timer_text($Timer.time_left)
+	
+	# check if the player got a prize
+	check_prize()
 
 func _input(event):
 	# probably don't need to create a signal here since it's the same file, but maybe move elsewhere later
@@ -72,19 +83,19 @@ func _input(event):
 			
 
 # callbacks
-func _on_Obstacle_body_entered(body):
-	if body.name == "CharacterBody2D":
-		# Collision occurred between Character2 and Character1
-		print("Collision detected between Character2 and Character1")
+func _on_Obstacle_hit():
+	set_game_over()
 		
-		set_game_over()
+func _on_Prize_collected(name):
+	prize = true
+	remove_prize(name)
 		
 func _on_Up_pressed():
 	move_dog(-1)
-	update_obstacle_positions(1)
+	update_item_positions(1)
 	
 func _on_Down_pressed():
-	update_obstacle_positions(-1)
+	update_item_positions(-1)
 
 func _on_Timer_timeout():
 	$Timer.stop()
@@ -92,6 +103,16 @@ func _on_Timer_timeout():
 	
 func _on_Player_reached_end():
 	set_game_over()
+	
+func _on_Treat_thrown():
+	if prize:
+		$Treat.visible = true
+		$Treat/AnimationPlayer.play("throw_treat")
+		prize = false
+	
+func _on_animation_player_animation_finished(anim_name):
+	if anim_name == "throw_treat":
+		$Treat.visible = false
 	
 	
 # utility functions
@@ -111,19 +132,16 @@ func set_game_over():
 	# this just resets the animation, i would prefer to pause it. but this works for now
 	$Dog/AnimationPlayer.stop()
 	
-func connect_obstacle_collision():
-	for obstacle in $Obstacles.get_children():
-		var area2d = obstacle.get_node("Area2D")
-		area2d.connect("body_entered", _on_Obstacle_body_entered)
-#		$Obstacles/Obstacle/Area2D.connect("body_entered", _on_Obstacle_body_entered)
-	
-func update_obstacle_positions(dir):
+func update_item_positions(dir):
 	# only move if it's not game over
 	if not game_over:
 		# only move if we're not on the last step or we're moving down
 		if not end or dir == -1:
 			for obstacle in $Obstacles.get_children():
 				obstacle.position.y += OBST_SPEED * dir
+				
+			for prize in $Prizes.get_children():
+				prize.position.y += OBST_SPEED * dir
 			
 	update_end()
 
@@ -136,3 +154,11 @@ func move_dog(dir):
 func update_end():
 	end = (step == last_step or step == last_step + 1)
 	$CharacterBody2D.end = ((prev_step == last_step) and last_dir == "up") or (prev_step == last_step + 1)
+
+func check_prize():
+	$GUI/MarginContainer/VBoxContainer/HBoxContainer/Treat.visible = prize
+
+func remove_prize(name):
+	for prize in $Prizes.get_children():
+		if prize.name == name:
+			prize.queue_free()

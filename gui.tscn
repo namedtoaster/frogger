@@ -1,16 +1,29 @@
-[gd_scene format=3 uid="uid://cer07bbkykuln"]
+[gd_scene load_steps=2 format=3 uid="uid://cer07bbkykuln"]
 
-[node name="MarginContainer" type="MarginContainer"]
+[ext_resource type="Texture2D" uid="uid://djewyxtnnkypm" path="res://icon.svg" id="1_jgcia"]
+
+[node name="GUI" type="CanvasLayer"]
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
+
+[node name="Treat" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+modulate = Color(0.0313726, 1, 0, 1)
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("1_jgcia")
+expand_mode = 1

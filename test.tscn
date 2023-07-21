@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dl0s61aivh26i"]
+[gd_scene load_steps=16 format=3 uid="uid://dl0s61aivh26i"]
 
 [ext_resource type="Script" path="res://obstacle.gd" id="1_87lyb"]
 [ext_resource type="Texture2D" uid="uid://djewyxtnnkypm" path="res://icon.svg" id="1_hwqma"]
@@ -7,11 +7,14 @@
 [ext_resource type="PackedScene" uid="uid://cer07bbkykuln" path="res://gui.tscn" id="5_lyee8"]
 [ext_resource type="Texture2D" uid="uid://dbns6qnb1jpjs" path="res://dog.png" id="6_cd4xn"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fyab5"]
+size = Vector2(78, 70.5)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_rgnen"]
 size = Vector2(124, 55)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_bueti"]
-size = Vector2(49, 47)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0jqus"]
+size = Vector2(50.9804, 49.1379)
 
 [sub_resource type="Animation" id="Animation_1gqlm"]
 length = 0.001
@@ -50,9 +53,80 @@ _data = {
 "creep": SubResource("Animation_v51j6")
 }
 
+[sub_resource type="Animation" id="Animation_pc83w"]
+resource_name = "throw_treat"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 1.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(182, 334), Vector2(182, 611), Vector2(182, 611)]
+}
+
+[sub_resource type="Animation" id="Animation_oakxe"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(182, 334)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ckc0h"]
+_data = {
+"RESET": SubResource("Animation_oakxe"),
+"throw_treat": SubResource("Animation_pc83w")
+}
+
 [node name="TestLevel" type="Node2D"]
 script = ExtResource("1_r3wfe")
 time_limit = 10.0
+
+[node name="GUI" parent="." instance=ExtResource("5_lyee8")]
+
+[node name="Prizes" type="Node2D" parent="."]
+
+[node name="Prize" type="Node2D" parent="Prizes"]
+position = Vector2(325, -276)
+
+[node name="Area2D" type="Area2D" parent="Prizes/Prize"]
+
+[node name="Sprite2D" type="Sprite2D" parent="Prizes/Prize/Area2D"]
+modulate = Color(0.0313726, 1, 0, 1)
+position = Vector2(-20, -20)
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("1_hwqma")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Prizes/Prize/Area2D"]
+position = Vector2(-20, -22)
+shape = SubResource("RectangleShape2D_fyab5")
+
+[node name="Prize2" type="Node2D" parent="Prizes"]
+position = Vector2(79, -1354)
+
+[node name="Area2D" type="Area2D" parent="Prizes/Prize2"]
+
+[node name="Sprite2D" type="Sprite2D" parent="Prizes/Prize2/Area2D"]
+modulate = Color(0.0313726, 1, 0, 1)
+position = Vector2(-20, -20)
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("1_hwqma")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Prizes/Prize2/Area2D"]
+position = Vector2(-20, -22)
+shape = SubResource("RectangleShape2D_fyab5")
 
 [node name="Obstacles" type="Node2D" parent="."]
 
@@ -651,19 +725,22 @@ position = Vector2(52, 17.5)
 shape = SubResource("RectangleShape2D_rgnen")
 debug_color = Color(0, 0.6, 0.701961, 0.419608)
 
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
-position = Vector2(147, 284)
+[node name="CharacterBody2D" type="Node2D" parent="."]
+position = Vector2(141, 284)
 scale = Vector2(2.04, 2.32)
 script = ExtResource("2_fv8sc")
 
-[node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D"]
+[node name="Area2D" type="Area2D" parent="CharacterBody2D"]
+position = Vector2(0.490196, -1.52588e-05)
+
+[node name="Sprite2D" type="Sprite2D" parent="CharacterBody2D/Area2D"]
 position = Vector2(19.5, 19.5)
 scale = Vector2(0.460937, 0.460937)
 texture = ExtResource("1_hwqma")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
-position = Vector2(20, 19)
-shape = SubResource("RectangleShape2D_bueti")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D/Area2D"]
+position = Vector2(19.6078, 18.9655)
+shape = SubResource("RectangleShape2D_0jqus")
 
 [node name="GameOver" type="Label" parent="."]
 offset_left = 136.0
@@ -682,8 +759,6 @@ offset_right = 332.0
 offset_bottom = 54.0
 text = "0:00"
 
-[node name="MarginContainer" parent="." instance=ExtResource("5_lyee8")]
-
 [node name="Dog" type="Node2D" parent="."]
 
 [node name="Sprite2D" type="Sprite2D" parent="Dog"]
@@ -694,3 +769,20 @@ texture = ExtResource("6_cd4xn")
 libraries = {
 "": SubResource("AnimationLibrary_fblq1")
 }
+
+[node name="Treat" type="Node2D" parent="."]
+position = Vector2(182, 334)
+
+[node name="Sprite2D" type="Sprite2D" parent="Treat"]
+modulate = Color(0.0313726, 1, 0, 1)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("1_hwqma")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Treat"]
+libraries = {
+"": SubResource("AnimationLibrary_ckc0h")
+}
+
+[connection signal="area_entered" from="CharacterBody2D/Area2D" to="CharacterBody2D" method="_on_area_2d_area_entered"]
+[connection signal="body_entered" from="CharacterBody2D/Area2D" to="CharacterBody2D" method="_on_area_2d_body_entered"]
+[connection signal="animation_finished" from="Treat/AnimationPlayer" to="." method="_on_animation_player_animation_finished"]

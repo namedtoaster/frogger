@@ -9,6 +9,8 @@ var end = false
 var prev_step = -1
 var last_dir = ""
 var prize = false
+var treat_slow = false
+var orig_dog_pos = Vector2(0, 0)
 
 signal up_pressed
 signal down_pressed
@@ -47,9 +49,11 @@ func _ready():
 	
 	# animate dog
 	$Dog/AnimationPlayer.play("creep")
+	# set the starting position for the dog
+	orig_dog_pos = $Dog.position
 	
 	# turn off treat animation until ready
-	$Treat.visible = false
+	set_treat(false)
 	
 	# set the farthest point to where the player is right now
 	#farthest = $CharacterBody2D.velocity.y
@@ -91,7 +95,8 @@ func _on_Prize_collected(name):
 	remove_prize(name)
 		
 func _on_Up_pressed():
-	move_dog(-1)
+	if not treat_slow:
+		move_dog(-1)
 	update_item_positions(1)
 	
 func _on_Down_pressed():
@@ -106,13 +111,27 @@ func _on_Player_reached_end():
 	
 func _on_Treat_thrown():
 	if prize:
-		$Treat.visible = true
+		set_treat(true)
 		$Treat/AnimationPlayer.play("throw_treat")
 		prize = false
 	
 func _on_animation_player_animation_finished(anim_name):
 	if anim_name == "throw_treat":
 		$Treat.visible = false
+		
+func _on_area_2d_area_entered(area):
+	var name = area.get_parent().name
+	if name == "Treat":
+		treat_slow = true
+		$Dog/AnimationPlayer.stop()
+		$Dog/Timer.start()
+		set_dog(false)
+		
+func _on_timer_timeout():
+	if not game_over:
+		treat_slow = false
+		$Dog.position = orig_dog_pos
+		set_dog(true)
 	
 	
 # utility functions
@@ -130,7 +149,7 @@ func set_game_over():
 	
 	# stop animation if it's playing
 	# this just resets the animation, i would prefer to pause it. but this works for now
-	$Dog/AnimationPlayer.stop()
+	$Dog/AnimationPlayer.stop(true)
 	
 func update_item_positions(dir):
 	# only move if it's not game over
@@ -148,8 +167,11 @@ func update_item_positions(dir):
 func move_dog(dir):
 	$Dog/AnimationPlayer.stop()
 	$Dog/AnimationPlayer.play("creep")
-		
-	$Dog/Sprite2D.position.y += dir * OBST_SPEED
+	
+func set_dog(show):
+	$Dog.visible = show
+	$Dog/Area2D.set_collision_layer_value(1, show)
+	$Dog/Area2D.set_collision_mask_value(1, show)
 
 func update_end():
 	end = (step == last_step or step == last_step + 1)
@@ -157,6 +179,11 @@ func update_end():
 
 func check_prize():
 	$GUI/MarginContainer/VBoxContainer/HBoxContainer/Treat.visible = prize
+	
+func set_treat(show):
+	$Treat.visible = show
+	$Treat/Area2D.set_collision_layer_value(16, show)
+		
 
 func remove_prize(name):
 	for prize in $Prizes.get_children():

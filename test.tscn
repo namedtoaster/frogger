@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://dl0s61aivh26i"]
+[gd_scene load_steps=18 format=3 uid="uid://dl0s61aivh26i"]
 
 [ext_resource type="Script" path="res://obstacle.gd" id="1_87lyb"]
 [ext_resource type="Texture2D" uid="uid://djewyxtnnkypm" path="res://icon.svg" id="1_hwqma"]
@@ -21,14 +21,14 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:position")
+tracks/0/path = NodePath(".:position")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(184.865, 629.12)]
+"values": [Vector2(185, 576)]
 }
 
 [sub_resource type="Animation" id="Animation_v51j6"]
@@ -37,20 +37,41 @@ length = 3.0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Sprite2D:position")
+tracks/0/path = NodePath(".:position")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(1, 3),
+"times": PackedFloat32Array(1.9, 3),
 "transitions": PackedFloat32Array(1, 1),
 "update": 0,
-"values": [Vector2(184.865, 629.12), Vector2(184.865, 483.98)]
+"values": [Vector2(185, 576), Vector2(185, 381)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_fblq1"]
 _data = {
 "RESET": SubResource("Animation_1gqlm"),
 "creep": SubResource("Animation_v51j6")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kl8fd"]
+size = Vector2(156, 211)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_l36wn"]
+size = Vector2(82, 76)
+
+[sub_resource type="Animation" id="Animation_oakxe"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(182, 334)]
 }
 
 [sub_resource type="Animation" id="Animation_pc83w"]
@@ -67,21 +88,6 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
 "values": [Vector2(182, 334), Vector2(182, 611), Vector2(182, 611)]
-}
-
-[sub_resource type="Animation" id="Animation_oakxe"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(182, 334)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_ckc0h"]
@@ -726,7 +732,7 @@ shape = SubResource("RectangleShape2D_rgnen")
 debug_color = Color(0, 0.6, 0.701961, 0.419608)
 
 [node name="CharacterBody2D" type="Node2D" parent="."]
-position = Vector2(141, 284)
+position = Vector2(137, 284)
 scale = Vector2(2.04, 2.32)
 script = ExtResource("2_fv8sc")
 
@@ -760,23 +766,42 @@ offset_bottom = 54.0
 text = "0:00"
 
 [node name="Dog" type="Node2D" parent="."]
-
-[node name="Sprite2D" type="Sprite2D" parent="Dog"]
-position = Vector2(184.865, 629.12)
-texture = ExtResource("6_cd4xn")
+position = Vector2(185, 576)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Dog"]
 libraries = {
 "": SubResource("AnimationLibrary_fblq1")
 }
 
+[node name="Area2D" type="Area2D" parent="Dog"]
+collision_mask = 32769
+
+[node name="Sprite2D" type="Sprite2D" parent="Dog/Area2D"]
+position = Vector2(-1.99998, 74)
+texture = ExtResource("6_cd4xn")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Dog/Area2D"]
+position = Vector2(-1, 70)
+shape = SubResource("RectangleShape2D_kl8fd")
+
+[node name="Timer" type="Timer" parent="Dog"]
+wait_time = 2.0
+
 [node name="Treat" type="Node2D" parent="."]
 position = Vector2(182, 334)
 
-[node name="Sprite2D" type="Sprite2D" parent="Treat"]
+[node name="Area2D" type="Area2D" parent="Treat"]
+position = Vector2(0, -6)
+collision_layer = 32768
+
+[node name="Sprite2D" type="Sprite2D" parent="Treat/Area2D"]
 modulate = Color(0.0313726, 1, 0, 1)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("1_hwqma")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Treat/Area2D"]
+position = Vector2(1, 0)
+shape = SubResource("RectangleShape2D_l36wn")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Treat"]
 libraries = {
@@ -785,4 +810,6 @@ libraries = {
 
 [connection signal="area_entered" from="CharacterBody2D/Area2D" to="CharacterBody2D" method="_on_area_2d_area_entered"]
 [connection signal="body_entered" from="CharacterBody2D/Area2D" to="CharacterBody2D" method="_on_area_2d_body_entered"]
+[connection signal="area_entered" from="Dog/Area2D" to="." method="_on_area_2d_area_entered"]
+[connection signal="timeout" from="Dog/Timer" to="." method="_on_timer_timeout"]
 [connection signal="animation_finished" from="Treat/AnimationPlayer" to="." method="_on_animation_player_animation_finished"]

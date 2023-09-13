@@ -3,6 +3,7 @@ extends Node
 @export var time_limit: float = 4.0
 @export var last_step = 10
 const OBST_SPEED = 215
+const OBST_ANIM_SPEED = 3
 var game_over = false
 var step = 0
 var end = false
@@ -11,6 +12,9 @@ var last_dir = ""
 var prize = false
 var treat_slow = false
 var orig_dog_pos = Vector2(0, 0)
+var jumping = false
+@export var jump_amount = 4
+var start_jump_pos = 0
 
 signal up_pressed
 signal down_pressed
@@ -27,6 +31,8 @@ func _ready():
 	$CharacterBody2D.connect("hit_obstacle", _on_Obstacle_hit)
 	# connect the signal for prize detection
 	$CharacterBody2D.connect("prize_collected", _on_Prize_collected)
+	# connect the signal for jymp detection
+	$CharacterBody2D.connect("jump_collected", _on_Jump_collected)
 	# connect the signal for throwing the treat
 	$CharacterBody2D.connect("throw_treat", _on_Treat_thrown)
 	
@@ -64,8 +70,13 @@ func _process(_delta):
 	
 	# check if the player got a prize
 	check_prize()
+	
+	# if the player jumps, move everybody else
+	jump()
 
 func _input(event):
+	print(step)
+	print(last_step)
 	# probably don't need to create a signal here since it's the same file, but maybe move elsewhere later
 	if not game_over:
 		if event.is_action_pressed("up"):
@@ -84,15 +95,26 @@ func _input(event):
 			
 			if prev_step != last_step + 1:
 				emit_signal("down_pressed")
-			
-
+		if event.is_action_pressed("test_jump"):
+			start_jump_pos = $Obstacles/Obstacle.position.y
+			jumping = true
 # callbacks
 func _on_Obstacle_hit():
-	set_game_over()
+	if not jumping:
+		set_game_over()
 		
 func _on_Prize_collected(name):
-	prize = true
-	remove_prize(name)
+	if not jumping:
+		prize = true
+		remove_prize(name)
+		
+func _on_Jump_collected(name):
+	if not jumping:
+		prev_step = step
+		step += jump_amount
+		start_jump_pos = $Obstacles/Obstacle.position.y
+		jumping = true
+		remove_jump(name)
 		
 func _on_Up_pressed():
 	if not treat_slow:
@@ -135,6 +157,18 @@ func _on_timer_timeout():
 	
 	
 # utility functions
+func jump():
+	if jumping:
+		for obstacle in $Obstacles.get_children():
+			obstacle.position.y += OBST_ANIM_SPEED
+		
+		for prize in $Prizes.get_children():
+			prize.position.y += OBST_ANIM_SPEED
+			
+		var obs_mv_amt = $Obstacles/Obstacle.position.y
+		if obs_mv_amt >= (start_jump_pos + (jump_amount * OBST_SPEED)):
+			jumping = false
+		
 func set_game_over():
 	game_over = true
 	
@@ -161,6 +195,9 @@ func update_item_positions(dir):
 				
 			for prize in $Prizes.get_children():
 				prize.position.y += OBST_SPEED * dir
+				
+			for jump in $Jumps.get_children():
+				jump.position.y += OBST_SPEED * dir
 			
 	update_end()
 
@@ -175,6 +212,7 @@ func set_dog(show):
 
 func update_end():
 	end = (step == last_step or step == last_step + 1)
+	# TODO: if you "jump" to the end using a token and hit the last step, this won't work
 	$CharacterBody2D.end = ((prev_step == last_step) and last_dir == "up") or (prev_step == last_step + 1)
 
 func check_prize():
@@ -189,3 +227,8 @@ func remove_prize(name):
 	for prize in $Prizes.get_children():
 		if prize.name == name:
 			prize.queue_free()
+			
+func remove_jump(name):
+	for jump in $Jumps.get_children():
+		if jump.name == name:
+			jump.queue_free()

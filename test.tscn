@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://dl0s61aivh26i"]
+[gd_scene load_steps=21 format=3 uid="uid://dl0s61aivh26i"]
 
 [ext_resource type="Script" path="res://obstacle.gd" id="1_87lyb"]
 [ext_resource type="Texture2D" uid="uid://djewyxtnnkypm" path="res://icon.svg" id="1_hwqma"]
@@ -15,6 +15,42 @@ size = Vector2(124, 55)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0jqus"]
 size = Vector2(50.9804, 49.1379)
+
+[sub_resource type="Animation" id="Animation_eisgo"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Area2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.490196, -1.52588e-05)]
+}
+
+[sub_resource type="Animation" id="Animation_c84ix"]
+resource_name = "jump"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Area2D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(0.490196, -1.52588e-05), Vector2(0.490196, -102.586)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_elbhw"]
+_data = {
+"RESET": SubResource("Animation_eisgo"),
+"jump": SubResource("Animation_c84ix")
+}
 
 [sub_resource type="Animation" id="Animation_1gqlm"]
 length = 0.001
@@ -105,7 +141,7 @@ time_limit = 10.0
 [node name="Prizes" type="Node2D" parent="."]
 
 [node name="Prize" type="Node2D" parent="Prizes"]
-position = Vector2(325, -276)
+position = Vector2(322, -282)
 
 [node name="Area2D" type="Area2D" parent="Prizes/Prize"]
 
@@ -120,7 +156,7 @@ position = Vector2(-20, -22)
 shape = SubResource("RectangleShape2D_fyab5")
 
 [node name="Prize2" type="Node2D" parent="Prizes"]
-position = Vector2(79, -1354)
+position = Vector2(92, -1785)
 
 [node name="Area2D" type="Area2D" parent="Prizes/Prize2"]
 
@@ -131,6 +167,23 @@ scale = Vector2(0.6875, 0.6875)
 texture = ExtResource("1_hwqma")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Prizes/Prize2/Area2D"]
+position = Vector2(-20, -22)
+shape = SubResource("RectangleShape2D_fyab5")
+
+[node name="Jumps" type="Node2D" parent="."]
+
+[node name="Jump" type="Node2D" parent="Jumps"]
+position = Vector2(87, -1363)
+
+[node name="Area2D" type="Area2D" parent="Jumps/Jump"]
+
+[node name="Sprite2D" type="Sprite2D" parent="Jumps/Jump/Area2D"]
+modulate = Color(0.972549, 0.105882, 1, 1)
+position = Vector2(-20, -20)
+scale = Vector2(0.6875, 0.6875)
+texture = ExtResource("1_hwqma")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Jumps/Jump/Area2D"]
 position = Vector2(-20, -22)
 shape = SubResource("RectangleShape2D_fyab5")
 
@@ -510,6 +563,23 @@ position = Vector2(52, 17.5)
 shape = SubResource("RectangleShape2D_rgnen")
 debug_color = Color(0, 0.6, 0.701961, 0.419608)
 
+[node name="Obstacle36" type="Node2D" parent="Obstacles"]
+position = Vector2(-109, -1869)
+scale = Vector2(0.839998, 3.36)
+script = ExtResource("1_87lyb")
+
+[node name="Area2D" type="Area2D" parent="Obstacles/Obstacle36"]
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacles/Obstacle36/Area2D"]
+position = Vector2(51.5, 17.75)
+scale = Vector2(1.07031, 0.480469)
+texture = ExtResource("1_hwqma")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacles/Obstacle36/Area2D"]
+position = Vector2(52, 17.5)
+shape = SubResource("RectangleShape2D_rgnen")
+debug_color = Color(0, 0.6, 0.701961, 0.419608)
+
 [node name="Obstacle15" type="Node2D" parent="Obstacles"]
 position = Vector2(-109, -2083)
 scale = Vector2(0.839998, 3.36)
@@ -747,6 +817,11 @@ texture = ExtResource("1_hwqma")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D/Area2D"]
 position = Vector2(19.6078, 18.9655)
 shape = SubResource("RectangleShape2D_0jqus")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CharacterBody2D"]
+libraries = {
+"": SubResource("AnimationLibrary_elbhw")
+}
 
 [node name="GameOver" type="Label" parent="."]
 offset_left = 136.0

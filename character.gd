@@ -3,6 +3,7 @@ extends Node2D
 signal reached_end
 signal hit_obstacle
 signal prize_collected(prize_name)
+signal jump_collected(jump_name)
 signal throw_treat
 
 const LR_SPEED = 120
@@ -62,3 +63,5 @@ func _on_area_2d_area_entered(area):
 	if "Prize" in name:
 		prize_collected.emit(name)
 		prize = true
+	if "Jump" in name:
+		jump_collected.emit(name)

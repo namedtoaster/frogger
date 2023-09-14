@@ -21,6 +21,8 @@ signal down_pressed
 # probably connect a game_over signal to the sub nodes?
 signal end_game
 
+var obs_generator = preload("res://obstacle_generator.gd").new()
+
 func get_timer_text(val):
 	var tmp = str(val)
 	return tmp.substr(0,4)
@@ -64,6 +66,11 @@ func _ready():
 	# set the farthest point to where the player is right now
 	#farthest = $CharacterBody2D.velocity.y
 	
+	# create the obstacle
+	var obs = obs_generator.generate_obstacles_array(last_step)
+	for i in range(last_step):
+		print(str(obs[i][0]) + ' ' + str(obs[i][1]) + ' ' + str(obs[i][2]))
+	
 func _process(_delta):
 	# update timer text
 	$TimerText.text = get_timer_text($Timer.time_left)
@@ -75,8 +82,6 @@ func _process(_delta):
 	jump()
 
 func _input(event):
-	print(step)
-	print(last_step)
 	# probably don't need to create a signal here since it's the same file, but maybe move elsewhere later
 	if not game_over:
 		if event.is_action_pressed("up"):

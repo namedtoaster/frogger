@@ -1,9 +1,11 @@
 extends Node
 
 @export var time_limit: float = 4.0
-@export var last_step = 10
+@export var last_step = 100
 const OBST_SPEED = 215
 const OBST_ANIM_SPEED = 3
+const OBST_H_S = 127
+const OBST_V_S = 215
 var game_over = false
 var step = 0
 var end = false
@@ -19,9 +21,10 @@ var start_jump_pos = 0
 signal up_pressed
 signal down_pressed
 # probably connect a game_over signal to the sub nodes?
-signal end_game
+signal level_complete
 
 var obs_generator = preload("res://obstacle_generator.gd").new()
+@onready var obs = preload("res://obstacle.tscn")
 
 func get_timer_text(val):
 	var tmp = str(val)
@@ -65,11 +68,8 @@ func _ready():
 	
 	# set the farthest point to where the player is right now
 	#farthest = $CharacterBody2D.velocity.y
-	
-	# create the obstacle
-	var obs = obs_generator.generate_obstacles_array(last_step)
-	for i in range(last_step):
-		print(str(obs[i][0]) + ' ' + str(obs[i][1]) + ' ' + str(obs[i][2]))
+		
+	create_obstacles(false)
 	
 func _process(_delta):
 	# update timer text
@@ -117,7 +117,8 @@ func _on_Jump_collected(name):
 	if not jumping:
 		prev_step = step
 		step += jump_amount
-		start_jump_pos = $Obstacles/Obstacle.position.y
+		start_jump_pos = $Obstacles.get_children()[0].position.y
+			
 		jumping = true
 		remove_jump(name)
 		
@@ -134,7 +135,9 @@ func _on_Timer_timeout():
 	set_game_over()
 	
 func _on_Player_reached_end():
-	set_game_over()
+	# TODO: add text to screen
+	print("level complete")
+	$EndTimer.start()
 	
 func _on_Treat_thrown():
 	if prize:
@@ -160,8 +163,34 @@ func _on_timer_timeout():
 		$Dog.position = orig_dog_pos
 		set_dog(true)
 	
+func _on_end_timer_timeout():
+	emit_signal("level_complete")
 	
 # utility functions
+func create_obstacles(print_grid):
+	var obs_grid = obs_generator.generate_obstacles_array(last_step)
+	for i in range(last_step):
+		if print_grid:
+			print(str(obs_grid[i][0]) + ' ' + str(obs_grid[i][1]) + ' ' + str(obs_grid[i][2]))
+		for j in range(3):
+			if obs_grid[i][j] == 1:
+				var obs_inst = obs.instantiate()
+				obs_inst.name = "Obstacle" + str(i + j)
+				obs_inst.position.y -= i * OBST_V_S
+				obs_inst.position.x += j * OBST_H_S
+				$Obstacles.add_child(obs_inst)
+		
+
+#	var test = obs.instantiate()
+#	test.position.y += OBST_V_S
+#	test.position.x += OBST_H_S
+#	$Obstacles.add_child(test)
+#
+#	var test2 = obs.instantiate()
+#	test2.position.x += OBST_H_S
+#	test2.position.y += OBST_V_S * 2
+#	$Obstacles.add_child(test2)
+	
 func jump():
 	if jumping:
 		for obstacle in $Obstacles.get_children():
@@ -170,7 +199,7 @@ func jump():
 		for prize in $Prizes.get_children():
 			prize.position.y += OBST_ANIM_SPEED
 			
-		var obs_mv_amt = $Obstacles/Obstacle.position.y
+		var obs_mv_amt = $Obstacles.get_children()[0].position.y
 		if obs_mv_amt >= (start_jump_pos + (jump_amount * OBST_SPEED)):
 			jumping = false
 		

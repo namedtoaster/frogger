@@ -20,11 +20,11 @@ var start_jump_pos = 0
 
 signal up_pressed
 signal down_pressed
-# probably connect a game_over signal to the sub nodes?
-signal level_complete
 
-var obs_generator = preload("res://obstacle_generator.gd").new()
-@onready var obs = preload("res://obstacle.tscn")
+var obs_generator = preload("res://Templates/Obstacles/obstacle_generator.gd").new()
+@onready var obs = preload("res://Templates/Obstacles/obstacle.tscn")
+
+@export_file var next_lvl
 
 func get_timer_text(val):
 	var tmp = str(val)
@@ -33,18 +33,18 @@ func get_timer_text(val):
 # builtin functions
 func _ready():
 	# Connect the signal for obstacle collision detection
-	$CharacterBody2D.connect("hit_obstacle", _on_Obstacle_hit)
+	$Player.connect("hit_obstacle", _on_Obstacle_hit)
 	# connect the signal for prize detection
-	$CharacterBody2D.connect("prize_collected", _on_Prize_collected)
+	$Player.connect("prize_collected", _on_Prize_collected)
 	# connect the signal for jymp detection
-	$CharacterBody2D.connect("jump_collected", _on_Jump_collected)
+	$Player.connect("jump_collected", _on_Jump_collected)
 	# connect the signal for throwing the treat
-	$CharacterBody2D.connect("throw_treat", _on_Treat_thrown)
+	$Player.connect("throw_treat", _on_Treat_thrown)
 	
 	# Connect the signal for the timer
 	$Timer.connect("timeout", _on_Timer_timeout)
 	# connet the signal for when the player has reached the end
-	$CharacterBody2D.connect("reached_end", _on_Player_reached_end)
+	$Player.connect("reached_end", _on_Player_reached_end)
 	# Connect the signal for when the player moves up
 	self.connect("up_pressed", _on_Up_pressed)
 	self.connect("down_pressed", _on_Down_pressed)
@@ -67,7 +67,7 @@ func _ready():
 	set_treat(false)
 	
 	# set the farthest point to where the player is right now
-	#farthest = $CharacterBody2D.velocity.y
+	#farthest = $Player.velocity.y
 		
 	create_obstacles(false)
 	
@@ -136,7 +136,7 @@ func _on_Timer_timeout():
 	
 func _on_Player_reached_end():
 	# TODO: add text to screen
-	print("level complete")
+	$Timer.stop()
 	$EndTimer.start()
 	
 func _on_Treat_thrown():
@@ -164,7 +164,7 @@ func _on_timer_timeout():
 		set_dog(true)
 	
 func _on_end_timer_timeout():
-	emit_signal("level_complete")
+	get_tree().change_scene_to_file(next_lvl)
 	
 # utility functions
 func create_obstacles(print_grid):
@@ -179,17 +179,6 @@ func create_obstacles(print_grid):
 				obs_inst.position.y -= i * OBST_V_S
 				obs_inst.position.x += j * OBST_H_S
 				$Obstacles.add_child(obs_inst)
-		
-
-#	var test = obs.instantiate()
-#	test.position.y += OBST_V_S
-#	test.position.x += OBST_H_S
-#	$Obstacles.add_child(test)
-#
-#	var test2 = obs.instantiate()
-#	test2.position.x += OBST_H_S
-#	test2.position.y += OBST_V_S * 2
-#	$Obstacles.add_child(test2)
 	
 func jump():
 	if jumping:
@@ -207,7 +196,7 @@ func set_game_over():
 	game_over = true
 	
 	# set game over for character
-	$CharacterBody2D.game_over = true
+	$Player.game_over = true
 	
 	# display game over
 	$GameOver.visible = true
@@ -247,7 +236,7 @@ func set_dog(show):
 func update_end():
 	end = (step == last_step or step == last_step + 1)
 	# TODO: if you "jump" to the end using a token and hit the last step, this won't work
-	$CharacterBody2D.end = ((prev_step == last_step) and last_dir == "up") or (prev_step == last_step + 1)
+	$Player.end = ((prev_step == last_step) and last_dir == "up") or (prev_step == last_step + 1)
 
 func check_prize():
 	$GUI/MarginContainer/VBoxContainer/HBoxContainer/Treat.visible = prize

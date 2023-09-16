@@ -1,0 +1,65 @@
+[gd_scene load_steps=6 format=3 uid="uid://cod5bnb644fpd"]
+
+[ext_resource type="Texture2D" uid="uid://dbns6qnb1jpjs" path="res://Enemies/Dog/dog.png" id="1_hbdbk"]
+
+[sub_resource type="Animation" id="Animation_1gqlm"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(185, 576)]
+}
+
+[sub_resource type="Animation" id="Animation_v51j6"]
+resource_name = "creep"
+length = 3.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(1.9, 3),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(185, 576), Vector2(185, 381)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_fblq1"]
+_data = {
+"RESET": SubResource("Animation_1gqlm"),
+"creep": SubResource("Animation_v51j6")
+}
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kl8fd"]
+size = Vector2(156, 211)
+
+[node name="Dog" type="Node2D"]
+position = Vector2(185, 576)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_fblq1")
+}
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_mask = 32769
+
+[node name="Sprite2D" type="Sprite2D" parent="Area2D"]
+position = Vector2(-1.99998, 74)
+texture = ExtResource("1_hbdbk")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(-1, 70)
+shape = SubResource("RectangleShape2D_kl8fd")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 2.0

@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://cnc3tk0l6slda"]
+
+[ext_resource type="PackedScene" uid="uid://dl0s61aivh26i" path="res://Templates/Level/level.tscn" id="1_ppxqr"]
+
+[node name="level_1" type="Node2D"]
+
+[node name="Level" parent="." instance=ExtResource("1_ppxqr")]
+time_limit = 3.75
+last_step = 150
